@@ -1,0 +1,18 @@
+#!/bin/sh
+cd ~/code/c/euler/
+
+# this assumes the length will always be a single digit
+# (also recall that wc outputs a tab so we need to tail head it to get the right
+# number)
+len=`/bin/echo -n "$1" | wc -m | tail -c 2 | head -c 1`
+#    ^ I don't understand why `echo -n` doesn't work, but `/bin/echo -n` does
+filler=""
+
+while [ $len -lt 3 ]; do
+    filler="${filler}0"
+    len=$((len+1))
+done
+
+bin="prob${filler}${1}"
+touch "${bin}.c"
+./.utilities/addp "$bin"

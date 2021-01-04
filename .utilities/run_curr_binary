@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "\nrunning . . ."
+echo "$(pwd)/$(/bin/ls -t -1 | grep "prob*" | head -n1)" | sh
