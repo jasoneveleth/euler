@@ -5,7 +5,8 @@
 
 #define MAX (num)999999999999999999
 #define WORD 18
-#define D 0
+// #define SIZE 1
+// ^ usage: myint->attr & SIZE
 
 #define BSIZE 80
 #define HELP                                                                \
@@ -26,28 +27,29 @@
     "c \t\t- clear the stack\n"                                             \
     "q, ^D, ^C \t- quits calc\n"
 
-typedef unsigned long num;
-typedef long snum; // signed num
+typedef uint64_t num;
+typedef int64_t snum; // signed num
 typedef struct {
     num size;
     num *arr;
-    num sign;
+    // num attr;
 } bigint;
 
-snum read_input(char **);
-snum parse(char *, char ***);
+num read_input(char **);
+num parse(char *, char ***);
 num execute(char **, bigint **);
 void print(bigint *);
 void str2bigint(bigint *, char *);
 void add(bigint *, bigint *);
+void rshift(bigint *, num);
+// lshift
+// mul
+// factorial (name '!')
 // modulo
 // sub
-// mul
 // div
 // negate (name '~')
 // cmp
-// rshift
-// lshift
 // times ten to power of (name 'e'?)
 
 static num inline pow10(snum pow) {
@@ -56,52 +58,53 @@ static num inline pow10(snum pow) {
     return acc;
 }
 
-void add(bigint *src, bigint *dest) {
-    if (D) {
-    fprintf(stderr, "\n");
-    fprintf(stderr, "slen: %lu, dlen %lu\n", src->size, dest->size);
-    fprintf(stderr, "del: 000000000000000001");
-    fprintf(stderr, "000000000000000001");
-    fprintf(stderr, "000000000000000001");
-    fprintf(stderr, "000000000000000001");
-    fprintf(stderr, "000000000000000001\n");
-    fprintf(stderr, "dst: %18lu%18lu%18lu%18lu%18lu\n", dest->arr[4] % MAX+1, dest->arr[3] % MAX+1, dest->arr[2] % MAX+1, dest->arr[1] % MAX+1, dest->arr[0] % MAX+1);
-    fprintf(stderr, "src: %18lu%18lu%18lu%18lu%18lu\n", src->arr[4] % MAX+1, src->arr[3] % MAX+1, src->arr[2] % MAX+1, src->arr[1] % MAX+1, src->arr[0] % MAX+1);
-    }
+// fprintf(stderr, "\n");
+// fprintf(stderr, "slen: %lu, dlen %lu\n", src->size, dest->size);
+// fprintf(stderr, "del: 000000000000000001");
+// fprintf(stderr, "000000000000000001");
+// fprintf(stderr, "000000000000000001");
+// fprintf(stderr, "000000000000000001");
+// fprintf(stderr, "000000000000000001\n");
+// fprintf(stderr, "dst: %18lu%18lu%18lu%18lu%18lu\n", dest->arr[4] % MAX+1, dest->arr[3] % MAX+1, dest->arr[2] % MAX+1, dest->arr[1] % MAX+1, dest->arr[0] % MAX+1);
+// fprintf(stderr, "src: %18lu%18lu%18lu%18lu%18lu\n", src->arr[4] % MAX+1, src->arr[3] % MAX+1, src->arr[2] % MAX+1, src->arr[1] % MAX+1, src->arr[0] % MAX+1);
 
+// not finished or working
+void rshift(bigint *n, num pow) {
+    if (n->arr[n->size-1] >= pow10(WORD)) {
+        n->arr = realloc(n->arr, n->size + 1);
+        n->size++;
+    }
+    num size = n->size;
+    num *arr = n->arr;
+
+    // just to use pow, not helpful
+    if (pow == 1) return; 
+
+    for (num i = 0; i < size; i++) {
+        arr[i] *= 10;
+        if (arr[i] > MAX) {
+            arr[i] -= MAX + 1;
+            arr[i+1] += arr[i]/(MAX + 1); // carry
+        }
+    }
+    return;
+}
+
+void add(bigint *src, bigint *dest) {
     num maxlen = (src->size > dest->size ? src->size : dest->size) + 1;
-    dest->arr = realloc(dest->arr, (num)maxlen * sizeof(num));
+    dest->arr = realloc(dest->arr, maxlen * sizeof(num));
     memset(&dest->arr[dest->size], 0, (maxlen-dest->size) * sizeof(num));
     dest->size = maxlen;
 
     num *sarr = src->arr;
     num *darr = dest->arr;
 
-    if (D) {
-    fprintf(stderr, "AFTER REALLOC\n");
-    fprintf(stderr, "slen: %lu, dlen %lu\n", src->size, dest->size);
-    fprintf(stderr, "del: 000000000000000001");
-    fprintf(stderr, "000000000000000001");
-    fprintf(stderr, "000000000000000001");
-    fprintf(stderr, "000000000000000001");
-    fprintf(stderr, "000000000000000001\n");
-    fprintf(stderr, "dst: %18lu%18lu%18lu%18lu%18lu\n", dest->arr[4] % MAX+1, dest->arr[3] % MAX+1, dest->arr[2] % MAX+1, dest->arr[1] % MAX+1, dest->arr[0] % MAX+1);
-    fprintf(stderr, "src: %18lu%18lu%18lu%18lu%18lu\n", src->arr[4] % MAX+1, src->arr[3] % MAX+1, src->arr[2] % MAX+1, src->arr[1] % MAX+1, src->arr[0] % MAX+1);
-    }
-
-    char carry = 0;
     for (num i = 0; i < src->size; ++i) {
-        darr[i] += sarr[i] + (num)carry;
+        darr[i] += sarr[i];
         if (darr[i] > MAX) {
             darr[i] -= MAX + 1;
-            carry = 1;
-        } else carry = 0;
-    }
-    darr[src->size] += (num)carry;
-    dest->size += (num)carry - 1;
-    if (D) {
-    fprintf(stderr, "fin: %18lu%18lu%18lu%18lu%18lu\n", dest->arr[4], dest->arr[3], dest->arr[2], dest->arr[1], dest->arr[0]);
-    fprintf(stderr, "slen: %lu, dlen %lu\n", src->size, dest->size);
+            darr[i+1] += 1; // carry
+        }
     }
 
     free(src->arr);
@@ -109,17 +112,17 @@ void add(bigint *src, bigint *dest) {
 
 void str2bigint(bigint *n, char *str) {
     num slen = strlen(str);
-    n->size = (slen-1)/WORD + (num)1;
-    n->arr = malloc((num)(n->size) * sizeof(num));
-    memset(n->arr, 0, (num)(n->size) * sizeof(num));
-    num i = slen;
-    while (i-- > 0) n->arr[i/WORD] += (num)(str[slen-1-i]-48)*pow10(i % WORD);
+    n->size = (slen-1)/WORD + 1; // maybe cast (num)1
+    n->arr = malloc((n->size) * sizeof(num));
+    memset(n->arr, 0, (n->size) * sizeof(num));
+    for (num i = 0; i < slen; i++) {
+        n->arr[i/WORD] += (num)(str[slen - 1 - i] - 48) * pow10(i % WORD);
+    }
 }
 
 void print(bigint *n) {
     num slen = WORD * n->size;
-    // +1 for NUL byte
-    char *str = malloc((slen + 1) * sizeof(char));
+    char *str = malloc((slen + 1) * sizeof(char)); // +1 for NUL byte
     for (num i = 0; i < slen; i++) {
         str[i] = (n->arr[(slen-1-i)/WORD] / pow10((slen-1-i) % WORD) % 10) + 48;
     }
@@ -131,15 +134,15 @@ void print(bigint *n) {
     free(str);
 }
 
-snum read_input(char **bufptr) {
+num read_input(char **bufptr) {
     char *buf = *bufptr;
-    static snum space = BSIZE;
+    static num space = BSIZE;
 
     if (!fgets(buf, (int)space, stdin)) return 0;
     char lastchar = buf[strlen(buf)-1];
     while (lastchar != '\n') {
         space *= 2;
-        buf = realloc(buf, (num)space * sizeof(char));
+        buf = realloc(buf, space * sizeof(char));
         if (!fgets(&buf[(space/2)-1], (int)(space/2), stdin)) return 0;
         lastchar = buf[strlen(buf)-1];
     }
@@ -147,16 +150,16 @@ snum read_input(char **bufptr) {
     return space;
 }
 
-snum parse(char *buf, char ***tokensptr) {
+num parse(char *buf, char ***tokensptr) {
     char **tokens = *tokensptr;
-    snum i = 0;
+    num i = 0;
     tokens[i] = strtok(buf, " \t\n");
     while (tokens[i]) {
-        static snum size = BSIZE*(num)sizeof(char);
-        if (i+1 >= size) tokens = realloc(tokens, (num)(size*=2)*sizeof(char *));
+        static num size = BSIZE*sizeof(char);
+        if (i+1 >= size) tokens = realloc(tokens, (size*=2)*sizeof(char *));
         tokens[++i] = strtok(NULL, " \t\n");
     }
-    if (tokens[0] == NULL) return -1;
+    if (tokens[0] == NULL) return 0;
     *tokensptr = tokens;
     return i;
 }
@@ -199,12 +202,12 @@ num execute(char **tokens, bigint **stackptr) {
 
 int main() {
     char *buf = malloc(BSIZE*sizeof(char));
-    char **tokens = malloc(BSIZE/3*(num)sizeof(char *));
+    char **tokens = malloc(BSIZE/3*sizeof(char *));
     bigint *stack = malloc(sizeof(bigint));
     num stacklen = 0;
     while (1) { // '&' passed because we want main's pointers reallocd
         if (read_input(&buf) <= 0) break;
-        if (parse(buf, &tokens) < 0) continue;
+        if (parse(buf, &tokens) <= 0) continue;
         stacklen = execute(tokens, &stack);
     }
     for (num j = 0; j < stacklen; j++) free(stack[j].arr);

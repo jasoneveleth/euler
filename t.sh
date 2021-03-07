@@ -61,7 +61,7 @@ printf "%-40s" "TEST 11: large numbers carry"
 recieved=$(printf "99999999999999999999 99999999999999999999 + p\n" | "$CALC")
 check_input "199999999999999999998" "$recieved"
 
-printf "%-40s" "TEST 10: 1 plus carry over word"
+printf "%-40s" "TEST 12: 1 plus carry over word"
 recieved=$(printf "1 999999999999999999 + p\n" | "$CALC")
 check_input "1000000000000000000" "$recieved"
 
