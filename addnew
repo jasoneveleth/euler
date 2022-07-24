@@ -1,5 +1,5 @@
 #!/bin/sh
-cd ~/code/c/euler/
+cd ~/src/euler/
 
 # this assumes the length will always be a single digit
 # (also recall that wc outputs a tab so we need to tail head it to get the right
@@ -15,4 +15,5 @@ done
 
 bin="prob${filler}${1}"
 touch "${bin}.c"
-./.utilities/addp "$bin"
+
+echo "?EXECS?\n??\n??\ns/\$/ $bin/\nw" | ed Makefile > /dev/null

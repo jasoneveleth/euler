@@ -6,7 +6,7 @@ CFLAGS += -Wall -Wextra -Wpedantic -Wconversion -Wdouble-promotion -Wnull-derefe
 CFLAGS += -Ofast
 # CFLAGS += -g -O0
 
-EXECS = cl prob627 prob067 wordsquare
+EXECS = prob627 prob067
 EXECS += prob009 prob010 prob011 prob012 prob013 prob014 prob017 prob018 
 EXECS += prob019 prob022
 
